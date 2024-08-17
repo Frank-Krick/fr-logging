@@ -6,10 +6,7 @@ use tokio::sync::mpsc::{UnboundedReceiver, UnboundedSender};
 pub fn setup_logging() {
     let home_dir = home::home_dir().unwrap();
     let path = home_dir.join(".config/pmx-1/logs");
-
-    unsafe {
-        std::env::set_var("LOG_FILE_PATH", path);
-    }
+    std::env::set_var("LOG_FILE_PATH", path);
 }
 
 pub struct Logger {
