@@ -22,12 +22,38 @@ impl Logger {
         Logger { component, sender }
     }
 
+    pub fn log_debug(&self, message: &str) {
+        let time_stamp = format!("{:?}", chrono::offset::Local::now());
+        let log_entry = Log::new(
+            "1",
+            &time_stamp,
+            &LogLevel::DEBUG,
+            &self.component,
+            message,
+            &LogFormat::NDJSON,
+        );
+        self.sender.send(log_entry).unwrap();
+    }
+
     pub fn log_info(&self, message: &str) {
         let time_stamp = format!("{:?}", chrono::offset::Local::now());
         let log_entry = Log::new(
             "1",
             &time_stamp,
             &LogLevel::INFO,
+            &self.component,
+            message,
+            &LogFormat::NDJSON,
+        );
+        self.sender.send(log_entry).unwrap();
+    }
+
+    pub fn log_error(&self, message: &str) {
+        let time_stamp = format!("{:?}", chrono::offset::Local::now());
+        let log_entry = Log::new(
+            "1",
+            &time_stamp,
+            &LogLevel::ERROR,
             &self.component,
             message,
             &LogFormat::NDJSON,
@@ -47,6 +73,14 @@ impl LoggerFactory {
 
     pub fn new_logger(&self, component: String) -> Logger {
         Logger::new(component, self.sender.clone())
+    }
+}
+
+pub async fn run_logging_task(mut receiver: UnboundedReceiver<Log>) {
+    loop {
+        if let Some(log) = receiver.recv().await {
+            log.log().await.unwrap();
+        };
     }
 }
 
